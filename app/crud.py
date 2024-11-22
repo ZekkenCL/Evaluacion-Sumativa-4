@@ -7,7 +7,7 @@ def create_user(db: Session, user: schemas.UserCreate):
         name=user.name,
         email=user.email,
         surname=user.surname,
-        password=models.User.get_password_hash(user.password)  # Asegúrate de que este método esté en el modelo User
+        password=models.User.get_password_hash(user.password)
     )
     db.add(db_user)
     db.commit()
