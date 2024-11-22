@@ -7,7 +7,7 @@ def create_user(db: Session, user: schemas.UserCreate):
         name=user.name,
         email=user.email,
         surname=user.surname,
-        password=models.User.get_password_hash(user.password)
+        password=models.User.get_password_hash(user.password)  # Asegúrate de que este método esté en el modelo User
     )
     db.add(db_user)
     db.commit()
@@ -16,6 +16,15 @@ def create_user(db: Session, user: schemas.UserCreate):
 
 def get_user(db: Session, user_id: str):
     db_user = db.query(models.User).filter(models.User.id == user_id, models.User.is_deleted == False).first()
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+def get_user_by_email(db: Session, email: str):
+    """
+    Obtiene un usuario por su correo electrónico.
+    """
+    db_user = db.query(models.User).filter(models.User.email == email, models.User.is_deleted == False).first()
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
