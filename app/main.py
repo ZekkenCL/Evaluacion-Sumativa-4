@@ -22,6 +22,20 @@ def get_db():
     finally:
         db.close()
 
+@app.post("/token")
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = crud.get_user_by_email(db=db, email=form_data.username)
+    if not user or not auth.verify_password(form_data.password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = auth.create_access_token(
+        data={"sub": user.email}, expires_delta=timedelta(minutes=30)
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
 @app.post("/users/", response_model=schemas.UserInDB)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db), token: str = Depends(auth.get_current_user)):
     return crud.create_user(db=db, user=user)
